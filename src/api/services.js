@@ -2,6 +2,7 @@ import api from ".";
 
 const ENDPOINT = {
   ACCOUNT: "/accounts",
+  LINK: "/links",
 };
 
 const getAllAccounts = async () => {
@@ -26,4 +27,17 @@ const getSelectedAccount = async (slug) => {
   }
 };
 
-export { getAllAccounts, getSelectedAccount };
+// Plural yak soalnya pas diselect pasti dapetnya lebih dari satu
+const getSelectedLinksByAccount = async (slug) => {
+  try {
+    const selectedLinks = await api.get(
+      `${ENDPOINT.LINK}?filters[account][slug][$eqi]=${slug}&populate=*`
+    );
+    // console.log(selectedLink);
+    return selectedLinks;
+  } catch (err) {
+    throw Error(err);
+  }
+};
+
+export { getAllAccounts, getSelectedAccount, getSelectedLinksByAccount };

@@ -1,11 +1,11 @@
-import { getAllAccounts, getSelectedAccount } from "@/api/services";
+import { getAllAccounts, getSelectedAccount, getSelectedLinksByAccount } from "@/api/services";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function SlugPage({ data }) {
-  //   console.log(data);
+export default function SlugPage({ data, links }) {
+  //   console.log(links.data);
   return (
     <main
       className={`flex min-h-screen max-w-2xl m-auto flex-col items-center p-4 pt-24 ${inter.className}`}
@@ -24,7 +24,7 @@ export default function SlugPage({ data }) {
         <p className="text-lg">{data.attributes.bio}</p>
       </div>
       <div className="flex flex-col items-center gap-8 w-full">
-        {data.attributes.links.data.map((value, index) => {
+        {links.data.map((value, index) => {
           let statusClass = "";
 
           if (value.attributes.status === "active") {
@@ -37,18 +37,36 @@ export default function SlugPage({ data }) {
           return value.attributes.status === "suspend" ? (
             <div
               key={index}
-              className={`h-full w-full bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-30 rounded-[24px] p-4 hover:scale-105 transition-all ${statusClass}`}
+              className={`flex gap-2 items-center h-full w-full bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-30 rounded-[24px] p-4 hover:scale-105 transition-all ${statusClass}`}
             >
+              <div className="relative w-[36px] h-[36px] rounded-full overflow-hidden">
+                <Image
+                  className="relative"
+                  layout="fill"
+                  objectFit="cover"
+                  src={`${process.env.NEXT_PUBLIC_ASSET_URL}${value.attributes.icon.data.attributes.url}`}
+                  alt={data.attributes.fullname}
+                ></Image>
+              </div>
               {value.attributes.title}
             </div>
           ) : (
             <a
               key={index}
-              className={`h-full w-full bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-30 rounded-[24px] p-4 hover:scale-105 transition-all ${statusClass}`}
+              className={`flex items-center gap-2 h-full w-full bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-30 rounded-[24px] p-4 hover:scale-105 transition-all ${statusClass}`}
               href={value.attributes.url}
               target="_blank"
               rel="noopener noreferrer"
             >
+              <div className="relative w-[36px] h-[36px] rounded-full overflow-hidden">
+                <Image
+                  className="relative"
+                  layout="fill"
+                  objectFit="cover"
+                  src={`${process.env.NEXT_PUBLIC_ASSET_URL}${value.attributes.icon.data.attributes.url}`}
+                  alt={data.attributes.fullname}
+                ></Image>
+              </div>
               {value.attributes.title}
             </a>
           );
@@ -75,9 +93,13 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const selectedAccount = await getSelectedAccount(params.slug);
   //   console.log(params);
+  const links = await getSelectedLinksByAccount(params.slug);
+  //   console.log(icon.data);
+
   return {
     props: {
       data: selectedAccount.data.data[0],
+      links: links.data,
     },
     revalidate: 10,
   };
